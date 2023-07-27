@@ -204,5 +204,7 @@ public class playerscript : MonoBehaviour
         }
 
         anim.SetBool("isJumping", !isGrounded());
+
+        anim.SetBool("isWallSliding", isWallSliding);
     }
 }
