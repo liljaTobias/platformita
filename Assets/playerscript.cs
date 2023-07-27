@@ -15,6 +15,8 @@ public class playerscript : MonoBehaviour
     public float buttonTime = 0.3f;
     public float cancelRate = 100;
 
+    public GameObject jumpParticles;
+
     [Header("Ground collision")]
     public Vector2 boxSize;
     public float castDistance;
@@ -30,6 +32,14 @@ public class playerscript : MonoBehaviour
     public float wallJumpingDuration = 0.4f;
     public Vector2 wallJumpingPower;
 
+    [Header("Dashing")]
+    public TrailRenderer trailRenderer;
+    public float dashingPower;
+    public float dashingTime;
+    public float dashingCooldown;
+    private bool canDash = true;
+    private bool isDashing;
+
     bool jumping;
     bool jumpCancelled;
     float jumptime;
@@ -37,6 +47,7 @@ public class playerscript : MonoBehaviour
     private Animator anim;
 
     private bool isFacingRight;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -48,12 +59,22 @@ public class playerscript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(isDashing)
+        {
+            return;
+        }
+
         horizontal = Input.GetAxis("Horizontal");
 
         HandleJump();
 
         WallSlide();
         WallJump();
+
+        if(Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+        {
+            StartCoroutine(Dash());
+        }
 
         if (!isWallJumping)
         {
@@ -65,6 +86,12 @@ public class playerscript : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (isDashing)
+        {
+            return;
+        }
+
+
         if (!isWallJumping)
         {
             rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
@@ -162,6 +189,7 @@ public class playerscript : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Space) && wallJumpingCounter > 0f)
         {
+            SpawnJumpParticles();
             isWallJumping = true;
             rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
             wallJumpingCounter = 0f;
@@ -181,6 +209,27 @@ public class playerscript : MonoBehaviour
     private void StopWallJumping()
     {
         isWallJumping = false;
+    }
+
+    private IEnumerator Dash()
+    {
+        canDash = false;
+        isDashing = true;
+        float originalGravity = rb.gravityScale;
+        rb.gravityScale = 0f;
+        rb.velocity = new Vector2(transform.localScale.x * dashingPower, 0f);
+        trailRenderer.emitting = true;
+        yield return new WaitForSeconds(dashingTime);
+        trailRenderer.emitting = false;
+        rb.gravityScale = originalGravity;
+        isDashing = false;
+        yield return new WaitForSeconds(dashingCooldown);
+        canDash = true;
+    }
+
+    private void SpawnJumpParticles()
+    {
+        GameObject tmpParticles = (GameObject)Instantiate(jumpParticles, transform.position, Quaternion.identity);
     }
 
     private void HandleAnimations()
