@@ -1,0 +1,4 @@
+{
+    "csharp.inlayHints.types.forLambdaParameterTypes": true,
+    "omnisharp.useModernNet": true,
+}
