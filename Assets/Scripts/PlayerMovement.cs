@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class playerscript : MonoBehaviour
@@ -14,10 +15,9 @@ public class playerscript : MonoBehaviour
     public float speed;
 
     [Header("Jumping")]
-    public float jumpHeight = 5;
+    public float jumpPower = 16;
     public float buttonTime = 0.3f;
     public float cancelRate = 100;
-    public float maxFallingSpeed = 4;
     public int maxNumberOfJumps = 1;
     private int amountOfJumpsLeft = 1;
 
@@ -55,6 +55,8 @@ public class playerscript : MonoBehaviour
 
     private bool isFacingRight;
 
+    private Vector3 checkpointPosition;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -62,11 +64,17 @@ public class playerscript : MonoBehaviour
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         playerState = GetComponent<PlayerState>();
+        checkpointPosition = gameObject.transform.position;
     }
 
-    // Update is called once per frame
+    // Update is called once per frame, use this for stuff like reading input
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            gameObject.transform.position = checkpointPosition;
+        }
+
         if(isDashing)
         {
             return;
@@ -92,6 +100,7 @@ public class playerscript : MonoBehaviour
         HandleAnimations();
     }
 
+    // Fixed update is best used for physics calculations
     private void FixedUpdate()
     {
         if (isDashing)
@@ -137,11 +146,18 @@ public class playerscript : MonoBehaviour
         }
     }
 
+    private void Jump(Vector2 dir)
+    {
+        rb.velocity = new Vector2(rb.velocity.x, 0);
+        rb.velocity += dir * jumpPower;
+    }
+
     void HandleJump()
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded()){
-            float jumpForce = Mathf.Sqrt(jumpHeight * -2 * (Physics2D.gravity.y * rb.gravityScale));
-            rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            //float jumpForce = Mathf.Sqrt(jumpPower * -2 * (Physics2D.gravity.y * rb.gravityScale));
+            //rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            Jump(Vector2.up);
             jumping = true;
             jumptime = 0;
             jumpCancelled = false;
@@ -165,8 +181,9 @@ public class playerscript : MonoBehaviour
             // Handle double jump
             if (Input.GetKeyDown(KeyCode.Space) && amountOfJumpsLeft > 0)
             {
-                float jumpForce = Mathf.Sqrt(jumpHeight * -2 * (Physics2D.gravity.y * rb.gravityScale));
-                rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+                //float jumpForce = Mathf.Sqrt(jumpPower * -2 * (Physics2D.gravity.y * rb.gravityScale));
+                //rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+                Jump(Vector2.up);
                 amountOfJumpsLeft -= 1;
             }
         } else
@@ -197,7 +214,6 @@ public class playerscript : MonoBehaviour
     {
         if(isWallSliding)
         {
-            ResetDoubleJump();
             isWallJumping = false;
             wallJumpingDirection = -transform.localScale.x;
             wallJumpingCounter = wallJumpingTime;
@@ -229,6 +245,7 @@ public class playerscript : MonoBehaviour
 
     private void StopWallJumping()
     {
+        ResetDoubleJump();
         isWallJumping = false;
     }
 
