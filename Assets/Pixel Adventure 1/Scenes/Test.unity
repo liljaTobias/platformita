@@ -1014,7 +1014,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 3
+  m_GravityScale: 4.5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -1116,14 +1116,13 @@ MonoBehaviour:
   jumpHeight: 3
   buttonTime: 0.3
   cancelRate: 30
-  jumpParticles: {fileID: 3543011584190190456, guid: 8905ce14de3b68140bf07223290d182a, type: 3}
   boxSize: {x: 0.73, y: 0.16}
   castDistance: 0.62
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   wallSlidingSpeed: 2
-  wallJumpingDuration: 0.4
+  wallJumpingDuration: 0.2
   wallJumpingPower: {x: 2, y: 16}
   trailRenderer: {fileID: 1159567031}
   dashingPower: 6

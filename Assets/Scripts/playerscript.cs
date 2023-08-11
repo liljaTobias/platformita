@@ -7,21 +7,27 @@ public class playerscript : MonoBehaviour
     [SerializeField] public Rigidbody2D rb;
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
+    private PlayerState playerState;
 
     private float horizontal;
 
     public float speed;
+
+    [Header("Jumping")]
     public float jumpHeight = 5;
     public float buttonTime = 0.3f;
     public float cancelRate = 100;
+    public float maxFallingSpeed = 4;
+    public int maxNumberOfJumps = 1;
+    private int amountOfJumpsLeft = 1;
 
-    public GameObject jumpParticles;
-
+    [Space]
     [Header("Ground collision")]
     public Vector2 boxSize;
     public float castDistance;
     public LayerMask groundLayer;
 
+    [Space]
     [Header("Wall jumping")]
     public float wallSlidingSpeed = 2f;
     private bool isWallSliding;
@@ -32,6 +38,7 @@ public class playerscript : MonoBehaviour
     public float wallJumpingDuration = 0.4f;
     public Vector2 wallJumpingPower;
 
+    [Space]
     [Header("Dashing")]
     public TrailRenderer trailRenderer;
     public float dashingPower;
@@ -54,6 +61,7 @@ public class playerscript : MonoBehaviour
         isFacingRight = true;
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        playerState = GetComponent<PlayerState>();
     }
 
     // Update is called once per frame
@@ -152,6 +160,19 @@ public class playerscript : MonoBehaviour
             }
         }
 
+        if(!isGrounded())
+        {
+            // Handle double jump
+            if (Input.GetKeyDown(KeyCode.Space) && amountOfJumpsLeft > 0)
+            {
+                float jumpForce = Mathf.Sqrt(jumpHeight * -2 * (Physics2D.gravity.y * rb.gravityScale));
+                rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+                amountOfJumpsLeft -= 1;
+            }
+        } else
+        {
+            ResetDoubleJump();
+        }
     }
 
     private bool isWalled()
@@ -176,6 +197,7 @@ public class playerscript : MonoBehaviour
     {
         if(isWallSliding)
         {
+            ResetDoubleJump();
             isWallJumping = false;
             wallJumpingDirection = -transform.localScale.x;
             wallJumpingCounter = wallJumpingTime;
@@ -189,7 +211,6 @@ public class playerscript : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.Space) && wallJumpingCounter > 0f)
         {
-            SpawnJumpParticles();
             isWallJumping = true;
             rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
             wallJumpingCounter = 0f;
@@ -227,9 +248,9 @@ public class playerscript : MonoBehaviour
         canDash = true;
     }
 
-    private void SpawnJumpParticles()
+    private void ResetDoubleJump()
     {
-        GameObject tmpParticles = (GameObject)Instantiate(jumpParticles, transform.position, Quaternion.identity);
+        amountOfJumpsLeft = maxNumberOfJumps;
     }
 
     private void HandleAnimations()
