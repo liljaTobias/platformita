@@ -120,6 +120,14 @@ public class playerscript : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Finish")
+        {
+            gameObject.transform.position = checkpointPosition;
+        }
+    }
+
     public bool isGrounded()
     {
         if(Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up, castDistance, groundLayer))
